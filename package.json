@@ -1,0 +1,30 @@
+{
+    "name": "node-ts-docker-project",
+    "version": "1.0.0",
+    "description": "A simple Node.js TypeScript project running in Docker",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/index.js",
+        "dev": "ts-node-dev --poll 1000 --respawn src/index.ts",
+        "debug": "npx nodemon --config nodemon.json"
+    },
+    "author": "Your Name",
+    "license": "ISC",
+    "dependencies": {
+        "base64url": "^3.0.1",
+        "express": "^4.18.2",
+        "jose": "^4.9.3",
+        "qrcode": "^1.5.4",
+        "reflect-metadata": "^0.1.13"
+    },
+    "devDependencies": {
+        "@sd-jwt/core": "^0.2.1",
+        "@types/express": "^4.17.15",
+        "@types/qrcode": "^1.5.5",
+        "nodemon": "^3.1.9",
+        "ts-node": "^10.9.2",
+        "ts-node-dev": "^2.0.0",
+        "typescript": "^5.7.3"
+    }
+}

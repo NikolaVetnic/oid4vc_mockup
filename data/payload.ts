@@ -1,0 +1,25 @@
+export const payload = {
+    cnf: {
+        jwk: {
+            crv: "P-256",
+            ext: true,
+            key_ops: ["Array"],
+            kty: "EC",
+            x: "0pOusaYLbGxziC6KrgkRwHISdVk5z4DZsmH4Zr14a9s",
+            y: "HyQ97TIgKQKedSWf2UqB9eSdfi6-KqFFWzrfabdJOm4",
+        },
+    },
+    vct: "urn:credential:diploma",
+    jti: "urn:credential:diploma:0cdd63d7-c5c1-4ba5-8553-4b266d1206f6",
+    family_name: "Doe",
+    given_name: "John",
+    title: "Bachelor in Physics",
+    grade: "8",
+    eqf_level: "6",
+    graduation_date: "2000-01-01T00:00:00.000Z",
+    expiry_date: "2035-04-21T00:00:00.000Z",
+    exp: 1770155157,
+    iat: 1738619157,
+    iss: "http://wallet-enterprise-diploma-issuer:8000",
+    sub: "AjCgt7xtKniF2-5Gj5tMBMFEalC2N5Zc-mvCdH5m04g",
+};
