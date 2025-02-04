@@ -13,25 +13,30 @@ import {
 import { sign, randomBytes, createHash, KeyObject } from "crypto";
 import { importPrivateKeyPem } from "../lib/importPrivateKeyPem";
 import { calculateJwkThumbprint, exportJWK, importX509 } from "jose";
+import { generateDummyKeyPair } from "./generateDummyKeyPair";
 
 const issuerX5C: string[] = JSON.parse(
     fs
         .readFileSync(path.join(__dirname, "../../keys/x5c.json"), "utf-8")
         .toString()
 ) as string[];
-const issuerPrivateKeyPem = fs
-    .readFileSync(path.join(__dirname, "../../keys/pem.key"), "utf-8")
-    .toString();
+
+const dummyKeyPair = generateDummyKeyPair();
+const dummyIssuerPrivateKeyPem = dummyKeyPair.privateKey;
+
 const issuerCertPem = fs
     .readFileSync(path.join(__dirname, "../../keys/pem.crt"), "utf-8")
     .toString() as string;
 
-importPrivateKeyPem(issuerPrivateKeyPem, "ES256"); // attempt to import the key
+importPrivateKeyPem(dummyIssuerPrivateKeyPem, "ES256"); // attempt to import the key
 importX509(issuerCertPem, "ES256"); // attempt to import the public key
 
 export const issuerSigner: CredentialSigner = {
     sign: async function (payload, headers, disclosureFrame) {
-        const key = await importPrivateKeyPem(issuerPrivateKeyPem, "ES256");
+        const key = await importPrivateKeyPem(
+            dummyIssuerPrivateKeyPem,
+            "ES256"
+        );
         if (!key) {
             throw new Error("Could not import private key");
         }
@@ -92,7 +97,10 @@ export const issuerSigner: CredentialSigner = {
         }
     },
     getPublicKeyJwk: async function () {
-        const key = await importPrivateKeyPem(issuerPrivateKeyPem, "ES256");
+        const key = await importPrivateKeyPem(
+            dummyIssuerPrivateKeyPem,
+            "ES256"
+        );
         if (!key) {
             throw new Error("Could not import private key");
         }
