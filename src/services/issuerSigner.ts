@@ -13,7 +13,7 @@ import {
 import { sign, randomBytes, createHash, KeyObject } from "crypto";
 import { importPrivateKeyPem } from "../lib/importPrivateKeyPem";
 import { calculateJwkThumbprint, exportJWK, importX509 } from "jose";
-import { generateDummyKeyPair } from "./generateDummyKeyPair";
+import { issuerDummyKeys } from "./generateDummyKeyPair";
 
 const issuerX5C: string[] = JSON.parse(
     fs
@@ -21,22 +21,22 @@ const issuerX5C: string[] = JSON.parse(
         .toString()
 ) as string[];
 
-const dummyKeyPair = generateDummyKeyPair();
-const dummyIssuerPrivateKeyPem = dummyKeyPair.privateKey;
+/*
+    const issuerCertPem = fs
+        .readFileSync(path.join(__dirname, "../../keys/pem.crt"), "utf-8")
+        .toString() as string;
 
-const issuerCertPem = fs
-    .readFileSync(path.join(__dirname, "../../keys/pem.crt"), "utf-8")
-    .toString() as string;
-
-importPrivateKeyPem(dummyIssuerPrivateKeyPem, "ES256"); // attempt to import the key
-importX509(issuerCertPem, "ES256"); // attempt to import the public key
+    importPrivateKeyPem(dummyKeyPair.privateKey, "ES256"); // attempt to import the key
+    importX509(issuerCertPem, "ES256"); // attempt to import the public key
+*/
 
 export const issuerSigner: CredentialSigner = {
     sign: async function (payload, headers, disclosureFrame) {
         const key = await importPrivateKeyPem(
-            dummyIssuerPrivateKeyPem,
+            issuerDummyKeys.privateKey,
             "ES256"
         );
+
         if (!key) {
             throw new Error("Could not import private key");
         }
@@ -66,17 +66,14 @@ export const issuerSigner: CredentialSigner = {
         };
 
         const issuanceDate = new Date();
-        // set token expiration to one year
+
         const expirationDate = new Date();
-        expirationDate.setFullYear(expirationDate.getFullYear() + 1);
+        expirationDate.setFullYear(expirationDate.getFullYear() + 1); // set token expiration to one year
+
         payload.exp = Math.floor(expirationDate.getTime() / 1000);
-
         payload.iat = Math.floor(issuanceDate.getTime() / 1000);
-
         payload.iss = config.url;
-
         payload.sub = await calculateJwkThumbprint(payload.cnf.jwk);
-
         headers.x5c = issuerX5C;
 
         if (disclosureFrame != undefined) {
@@ -98,7 +95,7 @@ export const issuerSigner: CredentialSigner = {
     },
     getPublicKeyJwk: async function () {
         const key = await importPrivateKeyPem(
-            dummyIssuerPrivateKeyPem,
+            issuerDummyKeys.privateKey,
             "ES256"
         );
         if (!key) {
