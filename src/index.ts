@@ -1,6 +1,5 @@
 import express from "express";
-import { generateCredentialResponse } from "./services/generateCredentialResponse";
-import { generateCustomCredential } from "./services/generateCustomCredentialResponse";
+import { generateCredentialResponse, generateCustomCredential } from "./services/generateCredentialResponse";
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -15,9 +14,12 @@ app.use(express.json());
 app.post("/generateCustomCredential", async (req, res) => {
     try {
         const diplomaData = req.body;
-
-        const result = await generateCustomCredential(diplomaData);
-        res.json(result);
+        console.log(diplomaData)
+        if (Object.keys(diplomaData).length === 0) {
+            res.json(await generateCredentialResponse("mock_user"));
+        } else {
+            res.json(await generateCustomCredential(diplomaData));
+        }
     } catch (error: any) {
         res.status(500).json({ error: error.message || "Failed to generate credential" });
     }
