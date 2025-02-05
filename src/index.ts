@@ -13,12 +13,12 @@ app.use(express.json());
 
 app.post("/generateCustomCredential", async (req, res) => {
     try {
-        const diplomaData = req.body;
-        console.log(diplomaData)
-        if (Object.keys(diplomaData).length === 0) {
-            res.json(await generateCredentialResponse("mock_user"));
+        const body = req.body;
+
+        if (Object.keys(body).length === 0) {
+            res.json(await generateCredentialResponse("mock_user", body?.disclosureFrame));
         } else {
-            res.json(await generateCustomCredential(diplomaData));
+            res.json(await generateCustomCredential(body.creds, body?.disclosureFrame));
         }
     } catch (error: any) {
         res.status(500).json({ error: error.message || "Failed to generate credential" });
