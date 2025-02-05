@@ -1,4 +1,4 @@
-import express, { query } from "express";
+import express from "express";
 import { generateCredentialResponse } from "./services/generateCredentialResponse";
 
 const app = express();
