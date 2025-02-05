@@ -6,8 +6,6 @@ import { metadata } from "../../data/metadata";
 import { VerifiableCredentialFormat } from "../types/oid4vci.types";
 import { issuerSigner } from "./issuerSigner";
 
-// original: https://github.com/wwWallet/wallet-ecosystem/blob/master/wallet-enterprise-configurations/diploma-issuer/src/configuration/SupportedCredentialsConfiguration/EdiplomasBlueprintSdJwtVCDM.ts
-
 export async function generateCustomCredential(diplomaData: any): Promise<{
     format: VerifiableCredentialFormat;
     credential: any;
@@ -31,6 +29,7 @@ export async function generateCustomCredential(diplomaData: any): Promise<{
             payload.graduation_date = gradDate.toISOString();
         }
     }
+
     if (diplomaData?.expiry_date) {
         const expDate = new Date(diplomaData.expiry_date);
         if (!isNaN(expDate.getTime())) {
@@ -43,7 +42,7 @@ export async function generateCustomCredential(diplomaData: any): Promise<{
         given_name: !!diplomaData?.given_name,
         title: !!diplomaData?.title,
         grade: !!diplomaData?.grade,
-        eqf_level: false, // no ability to hide
+        eqf_level: false,
         graduation_date: !!diplomaData?.graduation_date,
     };
 
