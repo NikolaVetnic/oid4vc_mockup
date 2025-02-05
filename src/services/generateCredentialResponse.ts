@@ -1,9 +1,9 @@
 import { randomUUID } from "crypto";
-import { diplomaEntry } from "../../data/diplomaEntry";
-import { id } from "../../data/id";
+import { diplomaEntry } from "../data/diplomaEntry";
+import { id } from "../data/id";
 import { VerifiableCredentialFormat } from "../types/oid4vci.types";
 import { issuerSigner } from "./issuerSigner";
-import { metadata } from "../../data/metadata";
+import { metadata } from "../data/metadata";
 import { base64url } from "jose";
 import { generateProofJWT } from "./jwtHelper";
 
