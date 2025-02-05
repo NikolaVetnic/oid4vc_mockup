@@ -1,17 +1,53 @@
 import { generateKeyPairSync } from "crypto";
 
-export function generateDummyKeyPair() {
-    const { privateKey, publicKey } = generateKeyPairSync("ec", {
-        namedCurve: "prime256v1", // or 'secp256k1', etc.
-        privateKeyEncoding: {
-            type: "pkcs8",
-            format: "pem",
-        },
-        publicKeyEncoding: {
-            type: "spki",
-            format: "pem",
-        },
-    });
+export function generateDummyKeys() {
+    const { privateKey: issuerPrivateKey, publicKey: issuerPublicKey } =
+        generateKeyPairSync("ec", {
+            namedCurve: "prime256v1", // or 'secp256k1', etc.
+            privateKeyEncoding: {
+                type: "pkcs8",
+                format: "pem",
+            },
+            publicKeyEncoding: {
+                type: "spki",
+                format: "pem",
+            },
+        });
 
-    return { privateKey, publicKey };
+    const { privateKey: holderPrivateKey, publicKey: holderPublicKey } =
+        generateKeyPairSync("ec", {
+            namedCurve: "prime256v1", // or 'secp256k1', etc.
+            privateKeyEncoding: {
+                type: "pkcs8",
+                format: "pem",
+            },
+            publicKeyEncoding: {
+                type: "spki",
+                format: "pem",
+            },
+        });
+
+    return {
+        issuerPrivateKey,
+        issuerPublicKey,
+        holderPrivateKey,
+        holderPublicKey,
+    };
 }
+
+const dummyKeys = generateDummyKeys();
+
+const issuerPrivateKey = dummyKeys.issuerPrivateKey;
+const issuerPublicKey = dummyKeys.issuerPublicKey;
+
+const holderPrivateKey = dummyKeys.holderPrivateKey;
+const holderPublicKey = dummyKeys.holderPublicKey;
+
+export const issuerDummyKeys = {
+    privateKey: issuerPrivateKey,
+    publicKey: issuerPublicKey,
+};
+export const holderDummyKeys = {
+    privateKey: holderPrivateKey,
+    publicKey: holderPublicKey,
+};
