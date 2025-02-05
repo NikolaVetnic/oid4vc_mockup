@@ -1,11 +1,11 @@
 import { randomUUID } from "crypto";
 import { diplomaEntry } from "../../data/diplomaEntry";
-import { holderPublicKeyJwk } from "../../data/holderPublicKeyJwk";
 import { id } from "../../data/id";
 import { VerifiableCredentialFormat } from "../types/oid4vci.types";
 import { issuerSigner } from "./issuerSigner";
 import { metadata } from "../../data/metadata";
 import { base64url } from "jose";
+import { generateProofJWT } from "./jwtHelper";
 
 // original: https://github.com/wwWallet/wallet-ecosystem/blob/master/wallet-enterprise-configurations/diploma-issuer/src/configuration/SupportedCredentialsConfiguration/EdiplomasBlueprintSdJwtVCDM.ts
 
@@ -13,9 +13,11 @@ export async function generateCredentialResponse(name: string): Promise<{
     format: VerifiableCredentialFormat;
     credential: any;
 }> {
+    const proofJwt = generateProofJWT(); // Issuer signs with his private key and holder's public key in order to make it possible for holder to unpack with private key.
+
     const payload = {
         cnf: {
-            jwk: holderPublicKeyJwk,
+            jwk: proofJwt.decoded.header.jwk,
         },
         vct: id,
         jti: `urn:credential:diploma:${randomUUID()}`,
