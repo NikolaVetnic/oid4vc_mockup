@@ -55,3 +55,17 @@ export async function generateCredentialResponse(name: string): Promise<{
 
     return response;
 }
+
+function validateDisclosureFrame(diploma: any, disclosureFrame: any) {
+    const missingKeys = Object.keys(diploma).filter(
+        (key) => !(key in disclosureFrame)
+    );
+
+    if (missingKeys.length > 0) {
+        throw new Error(
+            `The following keys are missing in the disclosure frame: ${missingKeys.join(
+                ", "
+            )}`
+        );
+    }
+}
