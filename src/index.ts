@@ -1,8 +1,24 @@
 import express from "express";
-import { generateCredentialResponse } from "./services/generateCredentialResponse";
+import { generateCredentials } from "./services/generateCredentialResponse";
+import { toDataURL } from "qrcode";
+import { generateProofJWT } from "./services/jwtHelper";
+import { holderDummyKeys } from "./services/generateDummyKeyPair";
+import { CredentialOffer } from "./services/interfaces";
+import { verifyProofJWT } from "./middleware/verifyProofJWT";
+
+/*
+    Implementation of the Authorization Code Flow, the Issuer-initi-
+    ated variation, described in Appendix G.1.
+    URL: https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#use-case-1
+*/
+
+const vciPrefix = "/api/vci";
 
 const app = express();
 const port = process.env.PORT || 4000;
+
+app.use(express.json());
+
 /*
     The holder (or their client) generates a proof JWT that demonst-
     rates control of their private key. This is usually obtained via
@@ -113,11 +129,11 @@ app.post(
                 credentials,
                 disclosureFrame
             );
-    res.send(result);
+            res.send(result);
         } catch (error: any) {
             res.status(500).json({
                 error: error.message || "Failed to generate credential",
-});
+            });
         }
     }
 );
