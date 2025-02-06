@@ -77,8 +77,50 @@ app.get(`${vciPrefix}/getCredentialOffer`, async (_, res) => {
         res.status(500).json({ error: "Failed to generate credential offer" });
     }
 });
+
+/*
+    In production, the proof JWT of the holder is provided by the c-
+    lient in the Authorization header. The middleware extracts it a-
+    nd verifies it, then attaches the decoded payload to req.proof.
+    For example:
+        Authorization: Bearer <holder-proof-jwt>
+*/
+app.post(
+    `${vciPrefix}/generateCredential`,
+    verifyProofJWT,
+    async (req, res) => {
+        try {
+            /*
+            Typically, the issuer would have the credential data already (f-
+            or example, from a trusted database) or it would generate it ba-
+            sed on some pre-verified information. The holder might not supp-
+            ly all of this data in the request. The request might simply in-
+            clude a reference (like an identifier) to retrieve the appropri-
+            ate data on the issuer’s side.
+        */
+            const credentials = req.body.credentials;
+
+            /*
+            The disclosure frame is used for selective disclosure, thus all-
+            owing the holder to control what information exactly is revealed
+            during presentation. In a production scenario, the disclosure f-
+            rame might be standardized or negotiated between issuer and hol-
+            der, rather than being provided arbitrarily in the request.
+        */
+            const disclosureFrame = req.body.disclosureFrame;
+
+            const result = await generateCredentials(
+                credentials,
+                disclosureFrame
+            );
     res.send(result);
+        } catch (error: any) {
+            res.status(500).json({
+                error: error.message || "Failed to generate credential",
 });
+        }
+    }
+);
 
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
