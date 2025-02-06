@@ -8,3 +8,9 @@ export interface CredentialSigner {
     ): Promise<{ jws: string }>;
     getPublicKeyJwk(): Promise<{ jwk: JWK }>;
 }
+
+export interface CredentialOffer {
+    issuer: string;
+    credentialType: string;
+    offerUrl: string;
+}
