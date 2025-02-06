@@ -3,6 +3,43 @@ import { generateCredentialResponse } from "./services/generateCredentialRespons
 
 const app = express();
 const port = process.env.PORT || 4000;
+/*
+    The holder (or their client) generates a proof JWT that demonst-
+    rates control of their private key. This is usually obtained via
+    a POST request to a dedicated endpoint (or generated within a w-
+    allet app) and then sent in the Authorization header of subsequ-
+    ent requests.
+*/
+app.post(`${vciPrefix}/generateHolderProof`, async (req, res) => {
+    try {
+        const { iss } = req.body; // Expecting the client to provide the holder identifier (iss)
+
+        if (!iss)
+            return res
+                .status(400)
+                .json({ error: "Holder identifier (iss) is required" });
+
+        const payload = {
+            nonce: Math.random().toString(36).substring(2, 15),
+            aud: `http://localhost:${port}/generateCredential`,
+            iss,
+            iat: Math.floor(Date.now() / 1000),
+        };
+
+        const { token, decoded } = generateProofJWT(
+            payload,
+            holderDummyKeys.publicKey,
+            holderDummyKeys.privateKey
+        );
+
+        res.json({ token, decoded });
+    } catch (error: any) {
+        console.error("Error generating holder proof JWT:", error);
+        res.status(500).json({
+            error: error.message || "Failed to generate holder proof JWT",
+        });
+    }
+});
 
 /*
     In production, the proof JWT of the holder is provided by the c-
