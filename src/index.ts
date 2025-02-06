@@ -5,6 +5,7 @@ import { generateProofJWT } from "./services/jwtHelper";
 import { holderDummyKeys } from "./services/generateDummyKeyPair";
 import { CredentialOffer } from "./services/interfaces";
 import { verifyProofJWT } from "./middleware/verifyProofJWT";
+import { generateMetadata } from "./services/generateMetadata";
 
 /*
     Implementation of the Authorization Code Flow, the Issuer-initi-
@@ -12,7 +13,7 @@ import { verifyProofJWT } from "./middleware/verifyProofJWT";
     URL: https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#use-case-1
 */
 
-const vciPrefix = "/api/vci";
+const vciPrefix = "api/vci";
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -26,7 +27,14 @@ app.use(express.json());
     allet app) and then sent in the Authorization header of subsequ-
     ent requests.
 */
-app.post(`${vciPrefix}/generateHolderProof`, async (req, res) => {
+app.post(`/${vciPrefix}/generateHolderProof`, async (req, res) => {
+    /*
+        The specification proposes two steps instead of a single one for
+        this functionality, namely that the user should first use a user
+        and password pair to get an authorization code, and then use the
+        authorization code to get the holder proof token.
+        This is described in section 3.4 of the VCI specification.
+    */
     try {
         const { iss } = req.body; // Expecting the client to provide the holder identifier (iss)
 
@@ -67,23 +75,29 @@ app.post(`${vciPrefix}/generateHolderProof`, async (req, res) => {
     tadata or security parameters.
     Use ../qr-viewer.html to view the generated QR code.
 */
-app.get(`${vciPrefix}/getCredentialOffer`, async (_, res) => {
+app.get(`/${vciPrefix}/getCredentialOffer`, async (_, res) => {
     try {
         // Example offer details
         const offer: CredentialOffer = {
             issuer: `http://localhost:${port}`,
             credentialType: "Diploma",
-            // The URL where the holder can initiate the credential issuance process.
-            // This might include a unique offer identifier in a production setup.
-            offerUrl:
-                "https://my-issuer.com/credential-request?offerId=123456789",
+            /*
+                The URL where the holder can initiate the credential issuance p-
+                rocess. This might include a unique offer identifier in a produ-
+                ction setup.
+            */
+            offerUrl: `http://localhost:${port}/${vciPrefix}/generateCredential`,
         };
 
-        // Generate a QR code from the offer URL
+        /*
+            Generate a QR code from the offer URL.
+        */
         const qrCodeDataUrl = await toDataURL(offer.offerUrl);
 
-        // Return the offer and the QR code as a JSON response.
-        // The client can render the QR code image from the data URL.
+        /*
+            Return the offer and the QR code as a JSON response, after which
+            the client can render the QR code image from the data URL.
+        */
         res.json({
             offer,
             qrCode: qrCodeDataUrl,
@@ -115,7 +129,7 @@ app.post(`/${vciPrefix}/generateMetadata`, async (req, res) => {
         Authorization: Bearer <holder-proof-jwt>
 */
 app.post(
-    `${vciPrefix}/generateCredential`,
+    `/${vciPrefix}/generateCredential`,
     verifyProofJWT,
     async (req, res) => {
         try {

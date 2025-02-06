@@ -47,6 +47,14 @@ export async function generateCredentials(
     const diploma = inputDiploma ?? defaultDiploma;
     const disclosureFrame = inputDisclosureFrame ?? defaultDisclosureFrame;
 
+    /*
+        VCI spec defines the option of binding the credentials to the u-
+        ser to which they belong (which would in turn allow each user to
+        use a different proof for each credential, therefor achieving t-
+        otal anonimity) for which the holder's public key would be used.
+        As this is optional, we have opted not to implement it.
+     */
+
     validateDisclosureFrame(diploma, disclosureFrame);
 
     const payload = {
