@@ -94,6 +94,19 @@ app.get(`${vciPrefix}/getCredentialOffer`, async (_, res) => {
     }
 });
 
+app.post(`/${vciPrefix}/generateMetadata`, async (req, res) => {
+    try {
+        const credentials = req.body.credentials;
+
+        const result = generateMetadata(credentials);
+        res.send(result);
+    } catch (error: any) {
+        res.status(500).json({
+            error: error.message || "Failed to generate credential",
+        });
+    }
+});
+
 /*
     In production, the proof JWT of the holder is provided by the c-
     lient in the Authorization header. The middleware extracts it a-
