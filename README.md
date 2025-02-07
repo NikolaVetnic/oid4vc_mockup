@@ -1,3 +1,3 @@
-# OID4VC Mockup
+# OID4VCI/VP Mockup
 
-Verifiable credentials issuance mockup Express server.
+Verifiable credentials issuance and presentation mockup Express server.
