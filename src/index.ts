@@ -2,7 +2,7 @@ import express from "express";
 import { generateCredentials } from "./services/generateCredentialResponse";
 import { toDataURL } from "qrcode";
 import { generateProofJWT } from "./services/jwtHelper";
-import { holderDummyKeys } from "./services/generateDummyKeyPair";
+import { holderDummyECKeys } from "./services/generateDummyKeyPair";
 import { CredentialOffer } from "./services/interfaces";
 import { verifyProofJWT } from "./middleware/verifyProofJWT";
 import { generateMetadata } from "./services/generateMetadata";
@@ -52,8 +52,8 @@ app.post(`/${vciPrefix}/generateHolderProof`, async (req, res) => {
 
         const { token, decoded } = generateProofJWT(
             payload,
-            holderDummyKeys.publicKey,
-            holderDummyKeys.privateKey
+            holderDummyECKeys.publicKey,
+            holderDummyECKeys.privateKey
         );
 
         res.json({ token, decoded });

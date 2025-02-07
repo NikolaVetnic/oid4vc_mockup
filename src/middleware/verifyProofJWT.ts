@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { createPublicKey } from "crypto";
-import { holderDummyKeys } from "../services/generateDummyKeyPair";
+import { holderDummyECKeys } from "../services/generateDummyKeyPair";
 
 const app = express();
 
@@ -38,7 +38,7 @@ export function verifyProofJWT(
 
     try {
         // Public key has to be known
-        const publicKey = createPublicKey(holderDummyKeys.publicKey);
+        const publicKey = createPublicKey(holderDummyECKeys.publicKey);
         const decoded = jwt.verify(token, publicKey, {
             algorithms: ["ES256"],
         }) as ProofPayload;
