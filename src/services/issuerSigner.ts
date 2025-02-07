@@ -15,7 +15,7 @@ import { importPrivateKeyPem } from "../lib/importPrivateKeyPem";
 import { calculateJwkThumbprint, exportJWK, importX509 } from "jose";
 import { issuerDummyKeys } from "./generateDummyKeyPair";
 
-const issuerX5C: string[] = JSON.parse(
+const serverX5C: string[] = JSON.parse(
     fs
         .readFileSync(path.join(__dirname, "../../keys/x5c.json"), "utf-8")
         .toString()
@@ -74,7 +74,7 @@ export const issuerSigner: CredentialSigner = {
         payload.iat = Math.floor(issuanceDate.getTime() / 1000);
         payload.iss = config.url;
         payload.sub = await calculateJwkThumbprint(payload.cnf.jwk);
-        headers.x5c = issuerX5C;
+        headers.x5c = serverX5C;
 
         if (disclosureFrame != undefined) {
             const sdJwt = new SdJwt({
