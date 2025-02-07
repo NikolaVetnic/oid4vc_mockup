@@ -6,6 +6,8 @@ import { holderDummyECKeys } from "./services/generateDummyKeyPair";
 import { CredentialOffer } from "./services/interfaces";
 import { verifyProofJWT } from "./middleware/verifyProofJWT";
 import { generateMetadata } from "./services/generateMetadata";
+import { OpenidPresentationsService } from "./services/OpenidPresentationsService";
+import { presentationDefinition } from "./data/presentationDefinition";
 
 /*
     Implementation of the Authorization Code Flow, the Issuer-initi-
@@ -164,6 +166,44 @@ app.post(
         }
     }
 );
+
+const vpPrefix = "api/vp";
+
+app.get(`/${vpPrefix}/getPresentationRequest`, async (_, res) => {
+    try {
+        const { state, signedRequestObject } =
+            await openidService.generateSignedRequestObject(
+                presentationDefinition
+            );
+        res.send({ state, signedRequestObject });
+    } catch (err) {
+        res.status(500).send({
+            error: err instanceof Error ? err.message : "Unknown error",
+        });
+    }
+});
+
+const openidService = new OpenidPresentationsService();
+
+/*
+    The wallet itself decides on which credentials to pass to the v-
+    erifier based on the presentation request. Right now I am passi-
+    ng all the credentials as payload of this request.
+*/
+app.post(`/${vpPrefix}/presentCredentials`, async (req, res) => {
+    try {
+        /*
+            Normally the vp_token would already be encoded and sent like th-
+            at from the wallet. In this case it is easier to see what is be-
+            ing sent.
+        */
+        req.body.vp_token = await openidService.signVpToken(req.body);
+        await openidService.verifyPresentationToken(req, res);
+    } catch (error) {
+        console.error("Error presenting credentials:", error);
+        return res.status(500).json({ error: (error as Error).message });
+    }
+});
 
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
