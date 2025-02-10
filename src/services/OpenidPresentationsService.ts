@@ -118,10 +118,7 @@ export class OpenidPresentationsService {
         }
     }
 
-    async validateVpToken(
-        vp_token: string,
-        expectedState: string
-    ): Promise<any> {
+    async validateVpToken(vp_token: string): Promise<any> {
         /*
             Here the issuer's public key is imported in PEM format. In a re-
             al world scenario is derived thusly:
