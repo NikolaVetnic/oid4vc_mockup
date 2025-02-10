@@ -1,13 +1,8 @@
 import { randomUUID } from "crypto";
 import { diplomaEntry } from "../data/diplomaEntry";
-import { id } from "../data/id";
 import { VerifiableCredentialFormat } from "../types/oid4vci.types";
-import { issuerSigner } from "./issuerSigner";
-import { metadata } from "../data/metadata";
-import { base64url } from "jose";
-import { generateProofJWT } from "./jwtHelper";
-import { issuerProofPayload } from "../data/issuerProofPayload";
-import { issuerDummyKeys } from "./generateDummyKeyPair";
+import { importPKCS8, SignJWT } from "jose";
+import { issuerDummyRSAKeys } from "./generateDummyKeyPair";
 
 // original: https://github.com/wwWallet/wallet-ecosystem/blob/master/wallet-enterprise-configurations/diploma-issuer/src/configuration/SupportedCredentialsConfiguration/EdiplomasBlueprintSdJwtVCDM.ts
 
@@ -26,7 +21,7 @@ const defaultDisclosureFrame = {
     given_name: true,
     title: true,
     grade: true,
-    eqf_level: false, // no ability to hide
+    eqf_level: false, // No ability to hide
     graduation_date: true,
     expiry_date: true,
 };
@@ -38,12 +33,6 @@ export async function generateCredentials(
     format: VerifiableCredentialFormat;
     credential: any;
 }> {
-    const issuerProofJwt = generateProofJWT(
-        issuerProofPayload,
-        issuerDummyKeys.publicKey,
-        issuerDummyKeys.privateKey
-    ); // Issuer signs with his private key and holder's public key in order to make it possible for holder to unpack with private key.
-
     const diploma = inputDiploma ?? defaultDiploma;
     const disclosureFrame = inputDisclosureFrame ?? defaultDisclosureFrame;
 
@@ -58,29 +47,36 @@ export async function generateCredentials(
     validateDisclosureFrame(diploma, disclosureFrame);
 
     const payload = {
-        cnf: {
-            jwk: issuerProofJwt.decoded.header.jwk,
-        },
-        vct: id,
-        jti: `urn:credential:diploma:${randomUUID()}`,
-        ...diploma,
+        "@context": ["https://www.w3.org/2018/credentials/v1"],
+        type: ["VerifiableCredential"],
+        credentialSubject: diploma,
+        issuanceDate: new Date().toISOString(),
+        expirationDate: new Date(
+            Date.now() + 365 * 24 * 60 * 60 * 1000
+        ).toISOString(), // 1 year from now
+        id: `urn:credential:diploma:${randomUUID()}`, // Unique identifier for the credential
     };
 
-    const { jws } = await issuerSigner.sign(
-        payload,
-        {
-            typ: "vc+sd-jwt",
-            vctm: [base64url.encode(JSON.stringify(metadata))], // Metadata is currently not updated in accordance with the request payload.
-        },
-        disclosureFrame
+    /*
+        Sign the payload with the issuer's private key. This will be us-
+        ed to verify the presentation later.
+    */
+    const issuerPrivateRsaKey = await importPKCS8(
+        issuerDummyRSAKeys.privateKey,
+        "RS256"
     );
+    const signedCredential = await new SignJWT(payload)
+        .setProtectedHeader({ alg: "RS256" })
+        .setIssuer("did:key:faculty-of-mathematics-dr-daniel-divjakovic")
+        .setAudience("user-wallet")
+        .setIssuedAt(new Date().getTime())
+        .setExpirationTime("2h")
+        .sign(issuerPrivateRsaKey);
 
-    const response = {
+    return {
         format: VerifiableCredentialFormat.VC_SD_JWT,
-        credential: jws,
+        credential: signedCredential,
     };
-
-    return response;
 }
 
 function validateDisclosureFrame(diploma: any, disclosureFrame: any) {
