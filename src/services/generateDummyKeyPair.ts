@@ -14,6 +14,19 @@ export function generateDummyKeys() {
             },
         });
 
+    const { privateKey: issuerPrivateRSAKey, publicKey: issuerPublicRSAKey } =
+        generateKeyPairSync("rsa", {
+            modulusLength: 2048, // Key size in bits, increase for stronger security.
+            publicKeyEncoding: {
+                type: "spki", // Recommended for public keys in PEM format.
+                format: "pem",
+            },
+            privateKeyEncoding: {
+                type: "pkcs8", // This produces the "-----BEGIN PRIVATE KEY-----" header.
+                format: "pem",
+            },
+        });
+
     /*
         Does the holder need both the EC and the RSA keys, or can I som-
         ehow derive them when needed from the same source?
@@ -60,6 +73,8 @@ export function generateDummyKeys() {
     return {
         issuerPrivateECKey,
         issuerPublicECKey,
+        issuerPrivateRSAKey,
+        issuerPublicRSAKey,
         holderPrivateECKey,
         holderPublicECKey,
         holderPrivateRSAKey,
@@ -78,6 +93,13 @@ export const issuerDummyECKeys = {
     privateKey: issuerPrivateECKey,
     publicKey: issuerPublicECKey,
 };
+
+const issuerPrivateRSAKey = dummyKeys.issuerPrivateRSAKey;
+const issuerPublicRSAKey = dummyKeys.issuerPublicRSAKey;
+
+export const issuerDummyRSAKeys = {
+    privateKey: issuerPrivateRSAKey,
+    publicKey: issuerPublicRSAKey,
 };
 
 const holderPrivateECKey = dummyKeys.holderPrivateECKey;
