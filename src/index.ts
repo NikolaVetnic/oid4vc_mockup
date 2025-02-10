@@ -188,16 +188,10 @@ const openidService = new OpenidPresentationsService();
 /*
     The wallet itself decides on which credentials to pass to the v-
     erifier based on the presentation request. Right now I am passi-
-    ng all the credentials as payload of this request.
+    ng the entire credential token.
 */
 app.post(`/${vpPrefix}/presentCredentials`, async (req, res) => {
     try {
-        /*
-            Normally the vp_token would already be encoded and sent like th-
-            at from the wallet. In this case it is easier to see what is be-
-            ing sent.
-        */
-        req.body.vp_token = await openidService.signVpToken(req.body);
         await openidService.verifyPresentationToken(req, res);
     } catch (error) {
         console.error("Error presenting credentials:", error);

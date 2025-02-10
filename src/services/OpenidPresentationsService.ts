@@ -1,15 +1,8 @@
 import { Request, Response } from "express";
 import { randomUUID } from "crypto";
 import base64url from "base64url";
-import {
-    SignJWT,
-    jwtVerify,
-    importPKCS8,
-    importSPKI,
-    decodeProtectedHeader,
-    generateKeyPair,
-} from "jose";
-import { holderDummyRSAKeys, verifierDummyKeys } from "./generateDummyKeyPair";
+import { SignJWT, jwtVerify, importPKCS8, importSPKI } from "jose";
+import { issuerDummyRSAKeys, verifierDummyKeys } from "./generateDummyKeyPair";
 
 const rpStateStore = new Map<string, any>(); // In-memory store for RP state (keyed by the state value)
 
@@ -81,7 +74,9 @@ export class OpenidPresentationsService {
         return { state, signedRequestObject };
     }
 
-    // Verify the presentation token received at the callback endpoint.
+    /*
+        Verify the presentation token received at the callback endpoint.
+    */
     async verifyPresentationToken(req: Request, res: Response): Promise<void> {
         try {
             const vp_token = req.body?.vp_token;
@@ -99,16 +94,17 @@ export class OpenidPresentationsService {
                 return;
             }
 
-            // Validate the VP token.
             const verifiedPayload = await this.validateVpToken(vp_token, state);
 
-            // Update the stored RP state with verification details.
             rpState.vp_token = base64url.encode(JSON.stringify(vp_token));
             rpState.verifiedClaims = verifiedPayload;
             rpState.response_code = base64url.encode(randomUUID());
             await this.saveRpState(rpState);
 
-            // Respond with a redirect URI that includes the response code.
+            /*
+                Respond with a redirect URI that includes within the response c-
+                ode.
+            */
             res.send({
                 redirect_uri:
                     rpState.callback_endpoint +
@@ -122,42 +118,39 @@ export class OpenidPresentationsService {
         }
     }
 
-    // Simplified VP token validation: verify the JWT and check the state.
     async validateVpToken(
         vp_token: string,
         expectedState: string
     ): Promise<any> {
-        const holderPublicRsaKey = await importSPKI(
-            holderDummyRSAKeys.publicKey,
-            "RSA256"
+        /*
+            Here the issuer's public key is imported in PEM format. In a re-
+            al world scenario is derived thusly:
+            1. The issuer's identity (e.g., iss claim in the JWT) is used to
+            locate its public key. E.g. if the issuer is identified by a DID
+            (Decentralized Identifier), you would resolve their DID document
+            to fetch the public key.
+            - Source on how to resolve a DID to a DID document and how publ-
+            ic keys are embedded in DID docs: https://www.w3.org/TR/did-1.0/
+            - Source on how the issuer is identified in a VC and how the is-
+            suer's public key is used: https://www.w3.org/TR/vc-data-model/
+            2. Use the iss claim in the JWT to fetch the issuer's public key
+            from a trusted source.
+         */
+        const issuerPublicKey = await importSPKI(
+            issuerDummyRSAKeys.publicKey, // your issuer's public key in PEM format
+            "RS256"
         );
 
         try {
-            const { payload } = await jwtVerify(vp_token, holderPublicRsaKey, {
-                audience: "http://localhost:4000/generateCredential",
+            // Verify the signed JWT. You can also add additional claims validation (issuer, audience, etc.)
+            const { payload } = await jwtVerify(vp_token, issuerPublicKey, {
+                audience: "user-wallet", // optionally enforce the audience
             });
-
-            if (decodeProtectedHeader(vp_token).state !== expectedState)
-                throw new Error("State mismatch");
+            console.log("🗒️ jwt is valid - payload", payload);
 
             return payload;
         } catch (err) {
             throw new Error(`VP token verification failed: ${err}`);
         }
-    }
-
-    async signVpToken(payload: any) {
-        const [rsaImportedPrivateKey, _] = await Promise.all([
-            importPKCS8(holderDummyRSAKeys.privateKey, "RS256"),
-            generateKeyPair("ECDH-ES"),
-        ]);
-
-        return await new SignJWT(payload.vp)
-            .setProtectedHeader({ alg: "RS256", state: payload.state })
-            .setIssuer(payload.iss)
-            .setAudience(payload.aud)
-            .setIssuedAt(payload.iat)
-            .setExpirationTime("2h")
-            .sign(rsaImportedPrivateKey);
     }
 }
