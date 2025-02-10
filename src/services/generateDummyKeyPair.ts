@@ -1,7 +1,7 @@
 import { generateKeyPairSync } from "crypto";
 
 export function generateDummyKeys() {
-    const { privateKey: issuerPrivateKey, publicKey: issuerPublicKey } =
+    const { privateKey: issuerPrivateECKey, publicKey: issuerPublicECKey } =
         generateKeyPairSync("ec", {
             namedCurve: "prime256v1", // Or 'secp256k1', etc.
             privateKeyEncoding: {
@@ -58,8 +58,8 @@ export function generateDummyKeys() {
         });
 
     return {
-        issuerPrivateKey,
-        issuerPublicKey,
+        issuerPrivateECKey,
+        issuerPublicECKey,
         holderPrivateECKey,
         holderPublicECKey,
         holderPrivateRSAKey,
@@ -71,12 +71,13 @@ export function generateDummyKeys() {
 
 const dummyKeys = generateDummyKeys();
 
-const issuerPrivateKey = dummyKeys.issuerPrivateKey;
-const issuerPublicKey = dummyKeys.issuerPublicKey;
+const issuerPrivateECKey = dummyKeys.issuerPrivateECKey;
+const issuerPublicECKey = dummyKeys.issuerPublicECKey;
 
-export const issuerDummyKeys = {
-    privateKey: issuerPrivateKey,
-    publicKey: issuerPublicKey,
+export const issuerDummyECKeys = {
+    privateKey: issuerPrivateECKey,
+    publicKey: issuerPublicECKey,
+};
 };
 
 const holderPrivateECKey = dummyKeys.holderPrivateECKey;

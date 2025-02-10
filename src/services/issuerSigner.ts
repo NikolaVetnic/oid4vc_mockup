@@ -13,7 +13,7 @@ import {
 import { sign, randomBytes, createHash, KeyObject } from "crypto";
 import { importPrivateKeyPem } from "../lib/importPrivateKeyPem";
 import { calculateJwkThumbprint, exportJWK, importX509 } from "jose";
-import { issuerDummyKeys } from "./generateDummyKeyPair";
+import { issuerDummyECKeys } from "./generateDummyKeyPair";
 
 const serverX5C: string[] = JSON.parse(
     fs
@@ -33,7 +33,7 @@ const serverX5C: string[] = JSON.parse(
 export const issuerSigner: CredentialSigner = {
     sign: async function (payload, headers, disclosureFrame) {
         const key = await importPrivateKeyPem(
-            issuerDummyKeys.privateKey,
+            issuerDummyECKeys.privateKey,
             "ES256"
         );
 
@@ -95,7 +95,7 @@ export const issuerSigner: CredentialSigner = {
     },
     getPublicKeyJwk: async function () {
         const key = await importPrivateKeyPem(
-            issuerDummyKeys.privateKey,
+            issuerDummyECKeys.privateKey,
             "ES256"
         );
         if (!key) {
