@@ -65,6 +65,7 @@ export async function generateCredentials(
         issuerDummyRSAKeys.privateKey,
         "RS256"
     );
+
     const signedCredential = await new SignJWT(payload)
         .setProtectedHeader({ alg: "RS256" })
         .setIssuer("did:key:faculty-of-mathematics-dr-daniel-divjakovic")
