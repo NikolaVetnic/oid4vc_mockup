@@ -94,7 +94,7 @@ export class OpenidPresentationsService {
                 return;
             }
 
-            const verifiedPayload = await this.validateVpToken(vp_token, state);
+            const verifiedPayload = await this.validateVpToken(vp_token);
 
             rpState.vp_token = base64url.encode(JSON.stringify(vp_token));
             rpState.verifiedClaims = verifiedPayload;
